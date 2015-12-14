@@ -1,18 +1,25 @@
 from __future__ import print_function
 
-from floattensor import FloatTensor, LongStorage
+from floattensor import FloatTensor, LongStorage, DoubleTensor
 
 import PyCudaTorch
 import PyTorchAug
 #from PyTorchAug import *
 
-def cuda(self):
+def cuda_from_float(self):
 #    print('cl')
     res = PyCudaTorch.FloatTensorToCudaTensor(self)
 #    print('res', res)
     return res
 
-FloatTensor.cuda = cuda
+def cuda_from_double(self):
+#    print('cl')
+    res = PyCudaTorch.DoubleTensorToCudaTensor(self)
+#    print('res', res)
+    return res
+
+FloatTensor.cuda = cuda_from_float
+DoubleTensor.cuda = cuda_from_double
 
 #PyTorchAug.
 
