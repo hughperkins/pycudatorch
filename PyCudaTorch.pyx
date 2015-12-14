@@ -1,4 +1,5 @@
 from __future__ import print_function
+import numbers
 
 import cython
 cimport cython
@@ -45,6 +46,16 @@ cdef extern from "THCTensor.h":
     void THCudaTensor_set2d(THCState *state, const THCudaTensor *tensor, long x0, long x1, float value)
     float THCudaTensor_get1d(THCState *state, const THCudaTensor *tensor, long x0)
     float THCudaTensor_get2d(THCState *state, const THCudaTensor *tensor, long x0, long x1)
+
+    void THCudaTensor_add(THCState *state, THCudaTensor *r_, THCudaTensor *t, float value)
+    void THCudaTensor_div(THCState *state, THCudaTensor *r_, THCudaTensor *t, float value)
+    void THCudaTensor_mul(THCState *state, THCudaTensor *r_, THCudaTensor *t, float value)
+
+    void THCudaTensor_add(THCState *state, THCudaTensor *tensorSelf, THCudaTensor *tensorOne, float value)
+
+    void THCudaTensor_cadd(THCState *state, THCudaTensor *r_, THCudaTensor *t, float value, THCudaTensor *second)
+    void THCudaTensor_cmul(THCState *state, THCudaTensor *r_, THCudaTensor *t, THCudaTensor *src)
+    void THCudaTensor_cdiv(THCState *state, THCudaTensor *r_, THCudaTensor *t, THCudaTensor *src)
 
 cdef extern from "THCTensorCopy.h":
     void THCudaTensor_copyFloat(THCState *state, THCudaTensor *self, THFloatTensor *src)
@@ -183,6 +194,37 @@ cdef class CudaTensor(object):
         cdef CudaTensor res = CudaTensor()
         THCudaTensor_add(cudaGlobalState.state, res.native, self.native, scalar)
         return res
+
+    def __iadd__(CudaTensor self, second):
+        cdef CudaTensor secondTensor
+        if isinstance(second, numbers.Number):
+            THCudaTensor_add(cudaGlobalState.state, self.native, self.native, second)
+        else:
+            secondTensor = second
+            THCudaTensor_cadd(cudaGlobalState.state, self.native, self.native, 1, secondTensor.native)
+        return self
+
+    def __isub__(CudaTensor self, second):
+        cdef CudaTensor secondTensor
+        if isinstance(second, numbers.Number):
+            THCudaTensor_add(cudaGlobalState.state, self.native, self.native, -second)
+        else:
+            secondTensor = second
+            THCudaTensor_cadd(cudaGlobalState.state, self.native, self.native, -1, secondTensor.native)
+        return self
+
+    def __idiv__(CudaTensor self, second):
+        cdef CudaTensor secondTensor
+        if isinstance(second, numbers.Number):
+            THCudaTensor_div(cudaGlobalState.state, self.native, self.native, second)
+        else:
+            secondTensor = second
+            THCudaTensor_cdiv(cudaGlobalState.state, self.native, self.native, secondTensor.native)
+        return self
+
+    def __imul__(CudaTensor self, float value):
+        THCudaTensor_mul(cudaGlobalState.state, self.native, self.native, value)
+        return self
 
     def __getitem__(CudaTensor self, int index):
         if self.dims() == 1:
