@@ -182,7 +182,7 @@ def test_pycudann():
     #print('calling size on imagestensor...')
     #print('   (called size)')
 
-    desiredN = 128
+    desiredN = 1280
     maxN = int(imagesTensor.size()[0])
     desiredN = min(maxN, desiredN)
     imagesTensor = imagesTensor.narrow(0, 0, desiredN)
@@ -202,7 +202,7 @@ def test_pycudann():
     print('imagesTensor.size()', imagesTensor.size())
 
     print('start training...')
-    for epoch in range(4):
+    for epoch in range(12):
         numRight = 0
         for n in range(N):
     #        print('n', n)
