@@ -89,7 +89,7 @@ mlp.cuda()
 print('mlp', mlp)
 myeval('mlp.output')
 input = PyTorch.FloatTensor(128,1,28,28).uniform().cuda()
-myeval('input[0]')
+myeval('input[0][0][0]')
 output = mlp.forward(input)
 myeval('output[0]')
 
